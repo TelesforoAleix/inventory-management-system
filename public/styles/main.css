@@ -1,0 +1,110 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh; 
+    width: (100vh - 40px); 
+    overflow: hidden; 
+}
+
+main {
+    height: calc(100vh - 60px); 
+    width: calc(100vw - 20px); 
+    display: grid;
+    padding: 10px;
+    gap: 10px;
+    grid-template-columns: repeat(6, 1fr); 
+    grid-template-rows: 1fr 1fr 1fr; 
+}
+
+.container{
+    display: block;
+    background-color: beige;
+    margin: 10px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title{
+    font-size: large;
+    margin: 0px 0px 10px 0px;
+}
+
+.notification{
+    margin: 20px 20px 0px 20px;
+    height: 20px;
+}
+
+h3{
+    text-align: center;
+    color: white;
+}
+
+
+.buttonArea{
+    display: flex;
+    justify-content: flex-end;
+    padding: 0px 20px;
+}
+
+.section {
+    background-color: whitesmoke;
+    padding: 10px;
+}
+
+.line{
+    display: flex;
+    justify-content: space-between;
+    width: 90%;
+    margin: 5px 10px;
+    align-items: center;
+
+    
+}
+
+.s1{
+    grid-area: span 1 / span 2;
+}
+
+.line > input{
+    width: 180px;
+}
+
+.s2{
+    grid-area: span 1 / span 2;
+}
+
+.s3{
+    grid-area: span 1 / span 2;
+}
+
+.s4{
+    grid-area: span 1 / span 6;
+}
+
+.c4{
+    display: grid;
+    grid-template-columns: 1fr 4fr;
+    grid-template-rows: 1fr;
+}
+
+#quantityStockGraph{
+    margin: -40px 0px -20px 0px;
+}
+
+.s5{
+    grid-area: span 1 / span 2;
+}
+
+.s6{
+    grid-area: span 1 / span 4;
+}
+
+#transactions{
+    overflow:scroll;
+    height: 195px;
+}
+
+#transactions > div{
+    background-color: white;
+    margin: 1px;
+}
