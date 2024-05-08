@@ -1,3 +1,21 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d5a9a6e6c256caeae554b22d7e0ad5768eabaaf25d74e3188aad794f3c6cbda6
-size 437
+{
+  "name": "inventory-management-system",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "watch": "nodemon --exec electron .",
+    "reset": "git reset --hard"
+  },
+  "author": "Aleix Moreno Telesforo",
+  "license": "ISC",
+  "dependencies": {
+    "node": "^22.1.0",
+    "nodemon": "^3.1.0",
+    "sqlite": "^5.1.1"
+  },
+  "devDependencies": {
+    "electron": "^30.0.2"
+  }
+}

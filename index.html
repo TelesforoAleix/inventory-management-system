@@ -1,3 +1,232 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:a2be5d315502561fccb79ace75c7370b9e0c24de349c9017a4b2734e3b41ee24
-size 7693
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Point of Sale APP</title>
+    
+    <style>
+      html { font-family: sans-serif; background: #2B2E3B; color: black; font-size: smaller; }</style>
+    <link rel="stylesheet" href="./public/styles/main.css">
+    
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+  </head>
+  <body>
+<div class="notification">
+  <h3><span id="notification"></span>
+  </h3>
+</div>
+ 
+<main> 
+
+<div class="section s1">
+  <h2 class="title">Register a new product</h2> 
+    <div class="container c1"> 
+      <!-- Form to add new product -->
+        <form>
+        <div class="line">
+          <label for="ref">Product ID</label>
+        <input type="text" id="ref" placeholder="Reference">
+        </div>
+        <div class="line">
+        <label for="name">Product Name</label>
+        <input type="text" id="name" placeholder="Product name">
+        </div>
+        <div class="line">
+        <label for="quantity">Initial inventory</label>
+        <input type="number" id="quantity" placeholder="0">
+        </div>
+        <div class="line">
+        <label for="cost">Cost</label>
+        <input type="number" id="cost" placeholder="10">
+        </div>
+        <div class="line">
+        <label for="pvp">PVP</label>
+        <input type="number" id="pvp" placeholder="20">
+        </div>
+        <div class="line">
+        <button type="submit" id="addProduct">Add Product</button>
+        </div>
+    </form>
+    
+  </div>
+    <div class="buttonArea">  
+      <div class="extraButton"><button class="button" id="cleanButton">Clean inventory</button></div>
+      <div class="extraButton"><button id="addRandomExamples">Add Random Examples</button></div>  
+    </div>
+</div>
+
+<div class="section s2">
+ 
+  <h2 class="title">Restock</h2>
+  <div class="container c2">
+      <form action="/restockProduct" method="post">
+          <div class="form-restock">
+            <div class="line">  
+            <label for="productDropdownRestock">Product to Restock</label>
+              <select id="productDropdownRestock">
+                <!-- Placeholder option -->
+                <option value="">Select a product...</option>
+                <script>
+                  // JavaScript code to populate the dropdown menu dynamically
+                  document.addEventListener('DOMContentLoaded', function() {
+                      updateInventory();
+                  });
+              </script>
+            </select>
+            </div>
+            <div class="line">  
+              <label for="productIdRestock">Product reference: </label>
+              <span id="productIdRestock"></span>
+                </div>
+            <div class="line">
+              <label for="quantityRestock">Quantity to Restock</label>
+              <input type="number" id="quantityRestock" min="0" placeholder="Quantity">
+            </div>
+            <div class="line">
+              <label for="purchasePrice">Purchase Price</label>
+              <input type="number" id="purchasePrice" min="0" placeholder="Purchase Price">
+            </div>
+            <hr>
+          <div class="financial-info">
+            <div class="line">
+              <label for="availableStockRestock">Available Stock:</label>
+              <span id="availableStockRestock"></span>
+            </div>
+            <div class="line">
+              <label for="restockPrice">Recommended Price:</label>
+              <span id="restockPrice"></span>
+            </div>
+            <div class="line">
+              <label for="averageRestockPrice">Average Restock Price:</label>
+              <span id="averageRestockPrice"></span>
+            </div>
+          </div>
+      </form>
+  </div>
+  <div class="buttonArea">
+    <button type="submit" id="restockProduct">Restock</button>
+    </div>
+</div>
+  </div>
+
+<div class="section s3">
+  <h2 class="title">Sell</h2>
+  <div class="container c3">
+      <form action="/sellProduct" method="post">
+          <div class="form-sell">
+              <div class="line">
+              <label for="productDropdownSell">Product to Sell</label>
+              <select name="id" id="productDropdownSell">
+              <option value="">Select a product...</option>
+                <script>
+                  // JavaScript code to populate the dropdown menu dynamically
+                  document.addEventListener('DOMContentLoaded', function() {
+                      updateInventory();
+                  });
+              </script>
+              </select>
+              </div>
+              <div class="line">  
+              <label for="productIdSell">Product reference: </label>
+              <span id="productIdSell"></span>
+                </div>
+              <div class="line">
+              <label for="quantitySell">Quantity to Sell</label>
+              <input type="number" id="quantitySell" min="0" placeholder="Quantity (max. stock)">
+              </div>
+              <div class="line">
+              <label for="salesPrice">Selling Price</label>
+              <input type="number" id="salesPrice" min="0" placeholder="Selling Price">
+              </div>
+          </div>
+          <hr>
+          <div class="financial-info">
+              <div class="line">  
+              <label for="availableStockSell">Available Stock:</label>
+              <span id="availableStockSell"></span>
+              </div>
+              <div class="line">
+              <label for="predSellingPrice">Recommended Price:</label>
+              <span id="predSellingPrice"></span>
+              </div>
+              <div class="line">
+              <label for="averageSellingPrice">Average Selling Price:</label>
+              <span id="averageSellingPrice"></span>
+            </div>
+          </div>
+      </form>           
+  </div>
+  <div class="buttonArea">
+    <button type="submit" id="sellProduct">Sell Product</button>
+  </div>
+</div>
+
+
+  <div class="section s4">
+    <h2 class="title">Inventory</h2> 
+ 
+  <div class="container c4"> 
+    
+    <div id="stockInfo">
+
+      <label for="availableStock">Available stock units: </label>
+              <span id="availableStock"></span><br>
+<hr>
+      <label for="numberOfModels">References in catalog: </label>
+              <span id="numberOfModels"></span><br>
+<hr>
+      <label for="inventoryValue">Inventory value: </label>
+              <span id="inventoryValue"></span><br>
+    </div>
+
+    
+      
+    <div id="quantityStockGraph"></div>
+
+
+  </div> 
+  </div>
+
+  <div class="section s5">
+    <h2 class="title">Financials</h2>  
+    <div class="container c5"> 
+
+      <label for="numberOfSales">Nº of sales:</label>
+            <span id="numberOfSales"></span><br>
+
+      <label for="quantitySold">Items sold:</label>
+            <span id="quantitySold"></span><br>
+<hr>
+      <label for="totalRevenue">Total Revenue:</label>
+            <span id="totalRevenue"></span><br>    
+
+      <label for="totalCogs">Total COGS:</label>
+            <span id="totalCogs"></span><br>
+
+      <label for="grossProfit">Gross Profit:</label>
+            <span id="grossProfit"></span><br>  
+<hr>            
+      <label for="ticketSize">Average ticket size:</label>
+            <span id="ticketSize"></span><br>    
+
+      <label for="unitsPerTransaction">Units per transaction:</label>
+            <span id="unitsPerTransaction"></span><br>
+
+      </div>
+  </div>
+
+  <div class="section s6">
+    <h2 class="title">Log of transactions</h2>  
+    <div class="container c5"> 
+          
+      <div id="transactions"></div>
+
+      </div>
+  </div>
+
+</main>
+    <script src='./renderer.js'></script>
+  </body>
+</html>

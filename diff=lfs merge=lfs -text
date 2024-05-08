@@ -1,0 +1,23 @@
+[33mcommit 8d34f45cb4f87dc6611bcc2ef270d4cfaa727df1[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m
+Author: TelesforoAleix <morenotelesforo.aleix@gmail.com>
+Date:   Wed May 8 12:57:26 2024 +0200
+
+    added latest version of electron in -dev dependencies
+
+[33mcommit 72baaba4851241a6d1b7f0fc2af946936de27c24[m
+Author: TelesforoAleix <morenotelesforo.aleix@gmail.com>
+Date:   Wed May 8 12:50:42 2024 +0200
+
+    added event listeners
+
+[33mcommit b232b788967e76f8ce26ad1cbacbe3707326305e[m
+Author: TelesforoAleix <morenotelesforo.aleix@gmail.com>
+Date:   Sat May 4 22:16:41 2024 +0200
+
+    instal dependencies
+
+[33mcommit 83e214823df950cab20191c0bf83745aecd02cc9[m
+Author: TelesforoAleix <morenotelesforo.aleix@gmail.com>
+Date:   Sat May 4 22:03:06 2024 +0200
+
+    import of html and css documents from previous testing
