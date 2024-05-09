@@ -1,4 +1,5 @@
-const { ipcRenderer, Notification } = require('electron')
+const { error } = require('console');
+const { ipcRenderer, Notification } = require('electron');
 
 //// background functions
 
@@ -8,65 +9,124 @@ ipcRenderer.on('show-notification', (event, response) => {
 });
 
 function showMessage(message) {
-    document.getElementById('notification').innerHTML = response;
+    document.getElementById('notification').innerHTML = message;
     setTimeout(() => {
-        document.getElementById('notification').innerHTML = ''}, 5000); ;
+        document.getElementById('notification').innerHTML = ''}, 3000); ;
 };
 
-
-//update data
-ipcRenderer.on('update-dashboard', (event, transactionLog, inventory, financials) => {
-    console.log(transactionLog);
-    console.log(inventory);
-    console.log(financials);
+// update dashboard when page is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    updateDashboard();
 });
 
+// update dashboard functions
 async function updateDashboard() {
-    console.log("Updating data on the website");
-
+    cleanForms();
+    updateInventory();
 }
 
+    function updateInventory() {
+        ipcRenderer.send('get-inventory-data');
+    };
+
+    // listener for inventoryData
+    ipcRenderer.on('inventory-info', (event, message, inventoryData) => {
+        showMessage(message);
+        updateInventoryMetrics(inventoryData);
+        console.log(inventoryData);
+    });
+
+
 //// event listeners
-/* 
-Event listener for the "Add Product" button (addButton)
-Event listener for the "Add Random Examples" button (addRandomExamplesButton)
-Event listener for the "Sell Product" button (sellButton)
-Event listener for the "Restock Product" button (restockButton)
-
-Event listener for the "Clean Inventory" button (cleanInventory)
-
-Event listener for changes in the product dropdown menu for selling (productDropdownSell)
-Event listener for changes in the product dropdown menu for restocking (productDropdownRestock)
-*/
 
 // add product button (addButton)
 const addButton = document.getElementById('addProduct');
 addButton.addEventListener('click', addProduct)
 
 function addProduct() {
-    const productDetail = {
-        ref: document.getElementById('ref').value,
-        name: document.getElementById('name').value,
-        quantity: parseInt(document.getElementById('quantity').value, 10),
-        cost: parseFloat(document.getElementById('cost').value),
-        pvp: parseFloat(document.getElementById('pvp').value)
-    };
-    const transactionType = 'add'
-    
-    if (!productData.ref || !productData.name || isNaN(productData.quantity) || isNaN(productData.predRestockPrice) || isNaN(productData.predSellingPrice)) {
+
+    const productDetail = getProductDetail(); 
+    const transactionType = 'add';
+
+    console.log(`product data and transactionType has been created for: ${productDetail} and ${transactionType}`);
+
+    if (!productDetail.ref || !productDetail.name || isNaN(productDetail.quantity) || isNaN(productDetail.cost) || isNaN(productDetail.pvp)) {
         console.log('There is some important missing data');
         showMessage('Some fields are missing important data');
     } else {
-        registerTransaction(productDetail, transactionType)
-        ipcRenderer.send('add-product', productDetail, transactionDetail )
-        cleanForms();
+        registerTransaction(productDetail, transactionType);
+        ipcRenderer.send('add-product', productDetail, transactionType );
     };
+
+    updateDashboard();
+} 
+
+function getProductDetail() {
+    const productDetail = {
+    ref: document.getElementById('ref').value,
+    name: document.getElementById('name').value,
+    quantity: parseInt(document.getElementById('quantity').value, 10),
+    cost: parseFloat(document.getElementById('cost').value),
+    pvp: parseFloat(document.getElementById('pvp').value)
+    };
+    return productDetail;
 }
 
+// add product (random) button
+const addRandomButton = document.getElementById('addRandomProduct');
+addRandomButton.addEventListener('click', addRandomProduct)
+
+function addRandomProduct() {
+    const productDetail = generateRandomProductData();
+    const transactionType = "add";
+
+    if (!productDetail.ref || !productDetail.name || isNaN(productDetail.quantity) || isNaN(productDetail.cost) || isNaN(productDetail.pvp)) {
+        const message = 'Error generating random data';
+        console.log(message);
+        showMessage(message);
+    } else {
+        console.log(`Random data has been created for: ${productDetail.name}`)
+        registerTransaction(productDetail, transactionType);
+        ipcRenderer.send('add-product', productDetail);
+        showMessage(`Random data has been created for: ${productDetail.name}`);
+    }
+
+    updateDashboard();
+}
+
+
+// clean inventory listener
+const cleanButton = document.getElementById('cleanButton');
+cleanButton.addEventListener('click', () => {
+    try {
+        ipcRenderer.send('clean-database');
+        console.log('Cleaning database...');
+    } catch (error) {
+        console.error('Error cleaning database:', error);
+    }
+});
+
+ipcRenderer.on('database-cleaned', (event, message) => {
+    console.log(message);
+    showMessage(message);
+    updateDashboard();
+});
+
+
 //// dom moficiations
+ 
+    // populate dropdown to transact with a product (restock or sell)
 
+    // Update data shown on Inventory Metrics
+    function updateInventoryMetrics(inventoryData) {
+        document.getElementById('availableStock').textContent = inventoryData.units;
+        document.getElementById('numberOfModels').textContent = inventoryData.models;
+        document.getElementById('inventoryValue').textContent = inventoryData.inventoryValue;
+    }
 
+    // Update data shown on Financials
 
+ 
 //// calculus and other funcitons
 
 function cleanForms() {
@@ -88,55 +148,58 @@ function cleanForms() {
 
 // 
 function generateRandomProductData() {
+    
+    const cost = parseFloat((Math.random() * 100).toFixed(2)); 
+    const pvp = (cost * 1.30).toFixed(2); 
+
     const productDetail = {
         ref: 'REF' + Math.floor(Math.random() * 1000), // Example: REF123
         name: 'Product ' + Math.floor(Math.random() * 100), // Example: Product 42
-        quantity: 0, //Math.floor(Math.random() * 50),
-        cost: parseFloat((Math.random() * 100).toFixed(2)),
-        pvp: (cost * 1.30).toFixed(2),
+        quantity: Math.floor(Math.random() * 50), // Or 0, as prefered
+        cost: cost,
+        pvp: pvp,
     }
     return productDetail;
 }
 
 // Register transactions || add, restock, sell
 function registerTransaction(productDetail, transactionType) {      
-    
-    const {ref, name, quantity, cost, pvp, } = productDetail  
+    const {ref, name, quantity, cost, pvp } = productDetail  
     const transactionDetail = {
-        time: Date.now(),
+        time: Date(),
         transactionType: transactionType,
         productId: productDetail.ref,
         productName: productDetail.name,
+        unitaryPrice: "", 
+        quantityMoved: "",
+        totalAmount: "",
     }
 
     switch (transactionType) {
-        case add:
+        case "add":
             transactionDetail.unitaryPrice = productDetail.cost,
             transactionDetail.quantityMoved = productDetail.quantity,
             transactionDetail.totalAmount= ( productDetail.cost * productDetail.quantity ).toFixed(2)
-            console.log('We have successfully create the register transaction from add');
-        return transactionDetail;
         break;
         
-        case restock:
+        case "restock":
             transactionDetail.unitaryPrice = productDetail.purchasePrice,
             transactionDetail.quantityMoved = productDetail.quantityRestock,
             transactionDetail.totalAmount= ( productDetail.cost * productDetail.quantityRestock ).toFixed(2)
-            console.log('We have successfully create the register transaction from restock');
-        return transactionDetail;           
         break;
 
-        case sell:
+        case "sell":
             transactionDetail.unitaryPrice = productDetail.salesPrice,
             transactionDetail.quantityMoved = productDetail.quantitySell,
             transactionDetail.totalAmount= ( productDetail.salesPrice * productDetail.quantitySell ).toFixed(2)
-            console.log('We have successfully create the register transaction from sell');
-        return transactionDetail;
         break;
 
         default: 
         console.log('There is an issue registering transaction, transaction type hasnt been shared')
     } 
+
+    ipcRenderer.send("new-transaction", transactionDetail);
+    console.log(`Transaction send to main, ready to register on db.`, transactionDetail);
 
 return transactionDetail;
 };

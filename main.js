@@ -5,10 +5,12 @@ const sqlite = require('sqlite3');
 const db = require('./database');
 
 
+let mainWindow
+
 // function to create window
 function createWindow() {
-    let mainWindow = new BrowserWindow({
-        width: 1280, 
+    mainWindow = new BrowserWindow({
+        width: 1680, // without devtools, 1280
         height: 800,
         x: 30,
         y: 30, 
@@ -20,7 +22,7 @@ function createWindow() {
     mainWindow.show();
     mainWindow.focus();
     mainWindow.loadFile('index.html');
-    // mainWindow.openDevTools();
+    mainWindow.openDevTools();
 
     mainWindow.on('closed',  () => {      
         mainWindow = null
@@ -33,10 +35,51 @@ app.on('ready', () => {
     //create window
     createWindow();
 
+    // add listeners for messages from renderer
 
-    ipcMain.on('add-product', newProduct)
+    // add product listener
+  ipcMain.on('add-product', (event, productDetail) => {
+    addProduct(productDetail);
+  });
+
+  
+    // clean database listener
+  ipcMain.on('clean-database', async (event) => {
+    try {
+      await db.cleanInventory();
+      event.sender.send('database-cleaned', 'Inventory cleaned successfully' )
+    } catch (error) {
+      console.error('Error cleaning inventory:', error);
+      event.sender.send('database-cleaned', error.message);
+    }
+  });
+
+  ipcMain.on('get-inventory-data', async (event) => {
+    try {
+      let inventoryData = await db.getInventory();
+      event.sender.send('inventory-info', 'Inventory data updated', inventoryData )
+    } catch (error) {
+      console.error('Error getting inventory data:', error);
+      event.sender.send('inventory-info', error.message);
+    }
+  });
+
 
 });
+
+// functions to interact with database.db
+
+async function addProduct(productDetail) {
+  try {
+      await db.newProduct(productDetail);
+  } catch (error) {
+    console.error('Error handling add-product event:', error);
+  }
+
+}
+
+
+
 
 // if program active but window closed, create new window
 app.on('activate', () => {

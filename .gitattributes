@@ -1,5 +1,3 @@
-*.js filter=lfs diff=lfs merge=lfs -text
-*.html filter=lfs diff=lfs merge=lfs -text
 /node_modules/.bin/electron filter=lfs diff=lfs merge=lfs -text
 *.cmd filter=lfs diff=lfs merge=lfs -text
 *.ps1 filter=lfs diff=lfs merge=lfs -text
@@ -8,7 +6,6 @@
 /node_modules/.bin/nodetouch filter=lfs diff=lfs merge=lfs -text
 /node_modules/.bin/nopt filter=lfs diff=lfs merge=lfs -text
 /node_modules/.bin/semver filter=lfs diff=lfs merge=lfs -text
-*.json filter=lfs diff=lfs merge=lfs -text
 /node_modules/@electron/get/LICENSE filter=lfs diff=lfs merge=lfs -text
 *.md filter=lfs diff=lfs merge=lfs -text
 *.ts filter=lfs diff=lfs merge=lfs -text
@@ -25,7 +22,6 @@
 /node_modules/anymatch/LICENSE filter=lfs diff=lfs merge=lfs -text
 *.yml filter=lfs diff=lfs merge=lfs -text
 /node_modules/binary-extensions/license filter=lfs diff=lfs merge=lfs -text
-*.txt filter=lfs diff=lfs merge=lfs -text
 /node_modules/brace-expansion/LICENSE filter=lfs diff=lfs merge=lfs -text
 /node_modules/braces/LICENSE filter=lfs diff=lfs merge=lfs -text
 /node_modules/buffer-crc32/LICENSE filter=lfs diff=lfs merge=lfs -text
@@ -60,7 +56,6 @@
 /node_modules/es-errors/LICENSE filter=lfs diff=lfs merge=lfs -text
 /node_modules/escape-string-regexp/license filter=lfs diff=lfs merge=lfs -text
 /node_modules/extract-zip/LICENSE filter=lfs diff=lfs merge=lfs -text
-*.npmignore filter=lfs diff=lfs merge=lfs -text
 /node_modules/fd-slicer/LICENSE filter=lfs diff=lfs merge=lfs -text
 /node_modules/fill-range/LICENSE filter=lfs diff=lfs merge=lfs -text
 /node_modules/fs-extra/LICENSE filter=lfs diff=lfs merge=lfs -text
@@ -144,7 +139,6 @@
 /node_modules/wrappy/LICENSE filter=lfs diff=lfs merge=lfs -text
 /node_modules/yallist/LICENSE filter=lfs diff=lfs merge=lfs -text
 /node_modules/yauzl/LICENSE filter=lfs diff=lfs merge=lfs -text
-*.css filter=lfs diff=lfs merge=lfs -text
 /node_modules/.bin/node filter=lfs diff=lfs merge=lfs -text
 /node_modules/node/bin/node filter=lfs diff=lfs merge=lfs -text
 /node_modules/node/node_modules/.bin/node filter=lfs diff=lfs merge=lfs -text
