@@ -23,10 +23,16 @@ document.addEventListener('DOMContentLoaded', () => {
 async function updateDashboard() {
     cleanForms();
     updateInventory();
+    updateTransactions();
+    showTransactions();
 }
 
     function updateInventory() {
         ipcRenderer.send('get-inventory-data');
+    };
+
+    function updateTransactions() {
+        ipcRenderer.send('get-transaction-history');
     };
 
     // listener for inventoryData
@@ -36,6 +42,14 @@ async function updateDashboard() {
         console.log(inventoryData);
     });
 
+    ipcRenderer.on('transaction-history', (event, transactionList) => {
+        console.log(transactionList);
+        showTransactions(transactionList);
+    });
+
+    ipcRenderer.on('transaction-register', (event, message) => {
+        showMessage(message);
+    });
 
 //// event listeners
 
@@ -121,8 +135,9 @@ ipcRenderer.on('database-cleaned', (event, message) => {
     function updateInventoryMetrics(inventoryData) {
         document.getElementById('availableStock').textContent = inventoryData.units;
         document.getElementById('numberOfModels').textContent = inventoryData.models;
-        document.getElementById('inventoryValue').textContent = inventoryData.inventoryValue;
+        document.getElementById('inventoryValue').textContent = inventoryData.inventoryValue.toFixed(2);
     }
+
 
     // Update data shown on Financials
 
@@ -163,10 +178,22 @@ function generateRandomProductData() {
 }
 
 // Register transactions || add, restock, sell
-function registerTransaction(productDetail, transactionType) {      
+function registerTransaction(productDetail, transactionType) {   
     const {ref, name, quantity, cost, pvp } = productDetail  
+    const rawDate = new Date();
+    const dateOptions =  {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+        timeZoneName: 'short'
+    };
+
     const transactionDetail = {
-        time: Date(),
+        time: rawDate.toLocaleString('en-US', dateOptions),
         transactionType: transactionType,
         productId: productDetail.ref,
         productName: productDetail.name,
@@ -199,7 +226,29 @@ function registerTransaction(productDetail, transactionType) {
     } 
 
     ipcRenderer.send("new-transaction", transactionDetail);
-    console.log(`Transaction send to main, ready to register on db.`, transactionDetail);
 
 return transactionDetail;
 };
+
+function showTransactions(transactionList) {
+    const transactionTable = document.getElementById('transactionRows');
+
+    while (transactionTable.firstChild) {
+        transactionTable.removeChild(transactionTable.firstChild);
+    }
+
+    for (let i = transactionList.length - 1; i >= 0; i--) {
+        const transaction = transactionList[i];
+        const row = document.createElement('tr');
+        row.innerHTML = `
+        <td>${transaction.time}</td>
+        <td>${transaction.transactionType}</td>
+        <td>${transaction.ref}</td>
+        <td>${transaction.name}</td>
+        <td>${transaction.unitaryPrice}</td>
+        <td>${transaction.quantityMoved}</td>
+        <td>${transaction.totalAmount}</td>
+      `;
+    transactionTable.appendChild(row);
+    }
+}

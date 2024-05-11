@@ -81,6 +81,15 @@ async function inventoryList() {
     return inventoryData.products;
 }
 
+async function getTransactions() {
+    let transactionList
+    let sql = 'SELECT * FROM transactions'
+    let params = []
+
+    transactionList = await getData(sql, params);
+    return transactionList;
+}
+
 async function inventoryMetrics() {
     let inventoryMetricsData; 
     try {
@@ -98,6 +107,19 @@ async function inventoryMetrics() {
 
     return inventoryMetricsData;
 }
+
+async function registerTransaction(transactionDetail) {
+
+        // import value from main.js as productDetail
+    const { time, transactionType, productId, productName, unitaryPrice, quantityMoved, totalAmount } = transactionDetail;
+
+    let sql = 'INSERT INTO transactions ( time, transactionType, ref, name, unitaryPrice, quantityMoved, totalAmount ) VALUES (?, ?, ?, ?, ?, ?, ?)' ;
+
+    let params = [time, transactionType, productId, productName, unitaryPrice, quantityMoved, totalAmount] ;
+
+    await runQuery(sql, params);
+    console.log('transaction should be succesfully added to db')
+};
 
     // Modify database
 
@@ -123,11 +145,14 @@ async function newProduct(productDetail) {
     // Process information
 
 
-// Clean all databases
+// Clean all databases 
 
-function cleanInventory() {
+async function cleanInventory() {
     let sql = 'DELETE FROM inventory';
-    return runQuery(sql, []);
+    await runQuery(sql, []);
+    let sql2 = 'DELETE FROM transactions';
+    await runQuery(sql2, []);
+
 }
 
 
@@ -163,5 +188,7 @@ function cleanInventory() {
 module.exports = {
     newProduct, 
     cleanInventory,
-    getInventory
+    getInventory, 
+    registerTransaction, 
+    getTransactions
  };

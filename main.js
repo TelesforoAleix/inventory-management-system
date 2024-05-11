@@ -42,7 +42,7 @@ app.on('ready', () => {
     addProduct(productDetail);
   });
 
-  
+
     // clean database listener
   ipcMain.on('clean-database', async (event) => {
     try {
@@ -64,6 +64,27 @@ app.on('ready', () => {
     }
   });
 
+  ipcMain.on('new-transaction', async (event, transactionDetail) => {
+    console.log('transaction received from renderer to main', transactionDetail);
+    try {
+      await db.registerTransaction(transactionDetail);
+      event.sender.send('transaction-register', 'Transaction registered succesfully');
+    } catch (error) {
+      console.error('Error registering transaction: ', error);
+      event.sender.send('transaction-register', error.message);
+    }
+
+  });
+
+  ipcMain.on('get-transaction-history', async (event) => {
+    try {
+      let transactionList = await db.getTransactions();
+      event.sender.send('transaction-history', transactionList);
+    } catch (error) {
+      console.error('Error getting transactions: ', error);
+      event.sender.send('transaction-history', error.message);
+    }
+  });
 
 });
 
