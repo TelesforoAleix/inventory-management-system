@@ -39,9 +39,11 @@ async function updateDashboard() {
     ipcRenderer.on('inventory-info', (event, message, inventoryData) => {
         showMessage(message);
         updateInventoryMetrics(inventoryData);
-        console.log(inventoryData);
+        showProducts(inventoryData);
+        populateDropdown(inventoryData);
     });
 
+    // listener for transactionList
     ipcRenderer.on('transaction-history', (event, transactionList) => {
         console.log(transactionList);
         showTransactions(transactionList);
@@ -135,7 +137,7 @@ ipcRenderer.on('database-cleaned', (event, message) => {
     function updateInventoryMetrics(inventoryData) {
         document.getElementById('availableStock').textContent = inventoryData.units;
         document.getElementById('numberOfModels').textContent = inventoryData.models;
-        document.getElementById('inventoryValue').textContent = inventoryData.inventoryValue.toFixed(2);
+        document.getElementById('inventoryValue').textContent = inventoryData.inventoryValue.toFixed(2)+"€";
     }
 
 
@@ -230,6 +232,7 @@ function registerTransaction(productDetail, transactionType) {
 return transactionDetail;
 };
 
+// update transaction history with new array received
 function showTransactions(transactionList) {
     const transactionTable = document.getElementById('transactionRows');
 
@@ -252,3 +255,87 @@ function showTransactions(transactionList) {
     transactionTable.appendChild(row);
     }
 }
+
+// update inventory cards based on available products
+
+function showProducts(inventoryData) {
+    const productsCards = document.getElementById('stock-products');
+    const products = inventoryData.products;
+    products.sort((a, b) => a.quantity - b.quantity);
+
+    while (productsCards.firstChild) {
+        productsCards.removeChild(productsCards.firstChild);
+    }
+
+    for (let i = products.length - 1; i >= 0; i--) {
+        const product = products[i];
+        const card = document.createElement('div');
+        card.classList.add('productsCards');
+        card.innerHTML = `
+        <h5>${product.ref}</h4>
+        <h3>${product.name}</h3>
+        <p>Stock: ${product.quantity}</p>
+        <p>PVP: ${product.pvp}€</p>
+        <p>Stock Value: ${product.totalValue.toFixed(2)}€</p>
+        `;
+    productsCards.appendChild(card);
+    }
+}
+
+// update dropdown menu for restock and sell
+function populateDropdown(inventoryData){
+    const dropdowns = document.getElementsByClassName('productDropdown');
+    const products = inventoryData.products;
+
+    // Iterate over each dropdown
+    Array.from(dropdowns).forEach(dropdown => {
+        dropdown.innerHTML = '';
+
+        // Add placeholder option
+        const placeholderOption = document.createElement('option');
+        placeholderOption.value = '';
+        placeholderOption.textContent = 'Select a product...';
+        dropdown.appendChild(placeholderOption);
+
+        // Populate dropdown with product options
+        products.forEach(product => {
+            const option = document.createElement('option');
+            option.value = product.name;
+            option.textContent = product.name;
+            dropdown.appendChild(option);           
+        });
+    });
+
+
+//show information about selected product dropdowns, restock and sell
+
+    // Add event listener to Restock dropdown for changes (e.g., selecting a product)
+    const productDropdownRestock = document.getElementById('productDropdownRestock');
+
+    productDropdownRestock.addEventListener('change', (event) => {
+        const selectedProduct = event.target.value;
+        const selectedProductInfo = inventoryData.products.find(product => product.name === selectedProduct);
+
+        if (selectedProductInfo) {
+            document.getElementById('productIdRestock').textContent = selectedProductInfo.ref;
+            document.getElementById('availableStockRestock').textContent = selectedProductInfo.quantity;
+            document.getElementById('restockPrice').textContent = selectedProductInfo.cost;
+        }
+    });
+
+        // Add event listener to Restock dropdown for changes (e.g., selecting a product)
+        const productDropdownSell = document.getElementById('productDropdownSell');
+
+        productDropdownSell.addEventListener('change', (event) => {
+            const selectedProduct = event.target.value;
+            const selectedProductInfo = inventoryData.products.find(product => product.name === selectedProduct);
+    
+            if (selectedProductInfo) {
+                document.getElementById('productIdSell').textContent = selectedProductInfo.ref;
+                document.getElementById('availableStockSell').textContent = selectedProductInfo.quantity;
+                document.getElementById('sellingPrice').textContent = selectedProductInfo.pvp;
+            }
+        });
+
+}
+

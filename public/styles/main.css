@@ -87,8 +87,31 @@ h3{
     grid-template-rows: 1fr;
 }
 
-#quantityStockGraph{
-    margin: -40px 0px -20px 0px;
+#stock-products{
+    display: flex;
+    flex-direction: row;
+    flex-wrap:nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 5px;
+}
+
+.productsCards{
+    min-width: 120px;
+    max-height: 180px;
+    padding: 3px;
+    border: 1px solid black;
+    border-radius: 10px;
+}
+
+.productsCards > p{
+    margin: 5px;
+    font-size: 12px;
+}
+
+.productsCards > h5{
+    margin: 5px;
 }
 
 .s5{
@@ -108,3 +131,21 @@ h3{
     background-color: white;
     margin: 1px;
 }
+
+#transactionsTable{
+    width: 100%;
+    border: 1px solid rgb(63, 63, 63); 
+    border-collapse: collapse;
+}
+
+#transactionsTable th{
+    border: 1px solid  rgb(63, 63, 63); 
+
+}
+
+#transactionsTable tr{
+    border: 1px solid  rgb(63, 63, 63); 
+
+}
+
+#transactionsTable tr:hover {background-color: #ddd;}

@@ -65,15 +65,9 @@
           <div class="form-restock">
             <div class="line">  
             <label for="productDropdownRestock">Product to Restock</label>
-              <select id="productDropdownRestock">
-                <!-- Placeholder option -->
+              <select id="productDropdownRestock" class="productDropdown">
                 <option value="">Select a product...</option>
-                <!-- <script>
-                  // JavaScript code to populate the dropdown menu dynamically
-                  document.addEventListener('DOMContentLoaded', function() {
-                      updateInventory();
-                  });
-              </script> -->
+
             </select>
             </div>
             <div class="line">  
@@ -95,12 +89,8 @@
               <span id="availableStockRestock"></span>
             </div>
             <div class="line">
-              <label for="restockPrice">Recommended Price:</label>
+              <label for="restockPrice">Restock Cost:</label>
               <span id="restockPrice"></span>
-            </div>
-            <div class="line">
-              <label for="averageRestockPrice">Average Restock Price:</label>
-              <span id="averageRestockPrice"></span>
             </div>
           </div>
       </form>
@@ -118,14 +108,9 @@
           <div class="form-sell">
               <div class="line">
               <label for="productDropdownSell">Product to Sell</label>
-              <select name="id" id="productDropdownSell">
+              <select id="productDropdownSell" class="productDropdown">
               <option value="">Select a product...</option>
-                <!-- <script>
-                  // JavaScript code to populate the dropdown menu dynamically
-                  document.addEventListener('DOMContentLoaded', function() {
-                      updateInventory();
-                  });
-              </script> -->
+
               </select>
               </div>
               <div class="line">  
@@ -148,12 +133,8 @@
               <span id="availableStockSell"></span>
               </div>
               <div class="line">
-              <label for="predSellingPrice">Recommended Price:</label>
-              <span id="predSellingPrice"></span>
-              </div>
-              <div class="line">
-              <label for="averageSellingPrice">Average Selling Price:</label>
-              <span id="averageSellingPrice"></span>
+              <label for="sellingPrice">Selling Price:</label>
+              <span id="sellingPrice"></span>
             </div>
           </div>
       </form>           
@@ -183,7 +164,7 @@
 
     
       
-    <div id="quantityStockGraph"></div>
+    <div id="stock-products"></div>
 
 
   </div> 
