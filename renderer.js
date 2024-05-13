@@ -24,7 +24,6 @@ async function updateDashboard() {
     cleanForms();
     updateInventory();
     updateTransactions();
-    showTransactions();
 }
 
     function updateInventory() {
@@ -37,7 +36,6 @@ async function updateDashboard() {
 
     // listener for inventoryData
     ipcRenderer.on('inventory-info', (event, message, inventoryData) => {
-        showMessage(message);
         updateInventoryMetrics(inventoryData);
         showProducts(inventoryData);
         populateDropdown(inventoryData);
@@ -79,13 +77,81 @@ function addProduct() {
 
 function getProductDetail() {
     const productDetail = {
-    ref: document.getElementById('ref').value,
-    name: document.getElementById('name').value,
-    quantity: parseInt(document.getElementById('quantity').value, 10),
-    cost: parseFloat(document.getElementById('cost').value),
-    pvp: parseFloat(document.getElementById('pvp').value)
+        ref: document.getElementById('ref').value,
+        name: document.getElementById('name').value,
+        quantity: parseInt(document.getElementById('quantity').value, 10),
+        cost: parseFloat(document.getElementById('cost').value),
+        pvp: parseFloat(document.getElementById('pvp').value)
     };
     return productDetail;
+}
+
+// restock product button
+const restockButton = document.getElementById('restockProduct');
+restockButton.addEventListener('click', restockProduct)
+
+function restockProduct(){
+    const productDetail = getRestockDetail();
+    const transactionType = 'restock';
+
+    if (!productDetail.ref || !productDetail.name || isNaN(productDetail.quantity) || isNaN(productDetail.cost)) {
+        console.log('There is some important missing data');
+        showMessage('Some fields are missing important data');
+    } else {
+        registerTransaction(productDetail, transactionType);
+        ipcRenderer.send('transact-product', productDetail, transactionType );
+    };
+
+    updateDashboard();
+} 
+
+
+function getRestockDetail() {
+    const restockDetail = {
+        ref: document.getElementById('productIdRestock').textContent,
+        name: document.getElementById('productDropdownRestock').value,
+        quantity: parseInt(document.getElementById('quantityRestock').value, 10),
+        cost: parseFloat(document.getElementById('restockPrice').value),
+        };
+    return restockDetail;
+}
+
+
+// sell product button
+const sellButton = document.getElementById('sellProduct');
+sellButton.addEventListener('click', sellProduct)
+
+function sellProduct(){
+    const productDetail = getSellDetail();
+    const transactionType = 'sell';
+    const availableStock = parseInt(document.getElementById('availableStockSell').innerHTML, 10);
+    console.log(availableStock, productDetail.quantity);
+
+    if (productDetail.quantity > availableStock) {
+        showMessage('Not enough stock, please restock');
+        console.log('Trying to sell more than available');
+    }
+
+    if (!productDetail.ref || !productDetail.name || isNaN(productDetail.quantity) || isNaN(productDetail.price)) {
+        console.log('There is some important missing data');
+        showMessage('Some fields are missing important data');
+    } else {
+        registerTransaction(productDetail, transactionType);
+        ipcRenderer.send('transact-product', productDetail, transactionType );
+    };
+
+    updateDashboard();
+
+}
+
+function getSellDetail() {
+    const sellDetail = {
+        ref: document.getElementById('productIdSell').textContent,
+        name: document.getElementById('productDropdownSell').value,
+        quantity: parseInt(document.getElementById('quantitySell').value, 10),
+        price: parseFloat(document.getElementById('sellPrice').value),
+        };
+    return sellDetail;
 }
 
 // add product (random) button
@@ -153,14 +219,21 @@ function cleanForms() {
     document.getElementById('quantity').value = '';
     document.getElementById('cost').value = '';
     document.getElementById('pvp').value = '';
-    // Sell form
+    // Restock form
     document.getElementById('productDropdownRestock').value = '';
+    document.getElementById('productIdRestock').textContent = '';
     document.getElementById('quantityRestock').value = '';
-    document.getElementById('purchasePrice').value = '';
-    // Restock Form        
+    document.getElementById('restockPrice').value = '';
+    document.getElementById('availableStockRestock').textContent = '';
+    document.getElementById('restockCost').textContent = '';
+    // Sell Form        
     document.getElementById('productDropdownSell').value = '';
+    document.getElementById('productIdSell').textContent = '';
     document.getElementById('quantitySell').value = '';
-    document.getElementById('salesPrice').value = '';
+    document.getElementById('sellPrice').value = '';
+    document.getElementById('availableStockSell').textContent = '';
+    document.getElementById('sellingPrice').textContent = '';
+
 } 
 
 // 
@@ -208,19 +281,19 @@ function registerTransaction(productDetail, transactionType) {
         case "add":
             transactionDetail.unitaryPrice = productDetail.cost,
             transactionDetail.quantityMoved = productDetail.quantity,
-            transactionDetail.totalAmount= ( productDetail.cost * productDetail.quantity ).toFixed(2)
+            transactionDetail.totalAmount= ( productDetail.cost * productDetail.quantity).toFixed(2)
         break;
         
         case "restock":
-            transactionDetail.unitaryPrice = productDetail.purchasePrice,
-            transactionDetail.quantityMoved = productDetail.quantityRestock,
-            transactionDetail.totalAmount= ( productDetail.cost * productDetail.quantityRestock ).toFixed(2)
+            transactionDetail.unitaryPrice = productDetail.cost,
+            transactionDetail.quantityMoved = productDetail.quantity,
+            transactionDetail.totalAmount= ( productDetail.cost * productDetail.quantity).toFixed(2)
         break;
 
         case "sell":
-            transactionDetail.unitaryPrice = productDetail.salesPrice,
-            transactionDetail.quantityMoved = productDetail.quantitySell,
-            transactionDetail.totalAmount= ( productDetail.salesPrice * productDetail.quantitySell ).toFixed(2)
+            transactionDetail.unitaryPrice = productDetail.price,
+            transactionDetail.quantityMoved = productDetail.quantity,
+            transactionDetail.totalAmount= ( productDetail.price * productDetail.quantity ).toFixed(2)
         break;
 
         default: 
@@ -235,7 +308,7 @@ return transactionDetail;
 // update transaction history with new array received
 function showTransactions(transactionList) {
     const transactionTable = document.getElementById('transactionRows');
-
+    
     while (transactionTable.firstChild) {
         transactionTable.removeChild(transactionTable.firstChild);
     }
@@ -276,8 +349,7 @@ function showProducts(inventoryData) {
         <h3>${product.name}</h3>
         <p>Stock: ${product.quantity}</p>
         <p>PVP: ${product.pvp}€</p>
-        <p>Stock Value: ${product.totalValue.toFixed(2)}€</p>
-        `;
+        <p>Stock Value: ${product.totalValue.toFixed(2)}€</p>`;
     productsCards.appendChild(card);
     }
 }
@@ -319,23 +391,23 @@ function populateDropdown(inventoryData){
         if (selectedProductInfo) {
             document.getElementById('productIdRestock').textContent = selectedProductInfo.ref;
             document.getElementById('availableStockRestock').textContent = selectedProductInfo.quantity;
-            document.getElementById('restockPrice').textContent = selectedProductInfo.cost;
+            document.getElementById('restockCost').textContent = selectedProductInfo.cost;
         }
     });
 
-        // Add event listener to Restock dropdown for changes (e.g., selecting a product)
-        const productDropdownSell = document.getElementById('productDropdownSell');
+    // Add event listener to Restock dropdown for changes (e.g., selecting a product)
+    const productDropdownSell = document.getElementById('productDropdownSell');
 
-        productDropdownSell.addEventListener('change', (event) => {
-            const selectedProduct = event.target.value;
-            const selectedProductInfo = inventoryData.products.find(product => product.name === selectedProduct);
-    
-            if (selectedProductInfo) {
-                document.getElementById('productIdSell').textContent = selectedProductInfo.ref;
-                document.getElementById('availableStockSell').textContent = selectedProductInfo.quantity;
-                document.getElementById('sellingPrice').textContent = selectedProductInfo.pvp;
-            }
-        });
+    productDropdownSell.addEventListener('change', (event) => {
+        const selectedProduct = event.target.value;
+        const selectedProductInfo = inventoryData.products.find(product => product.name === selectedProduct);
+
+        if (selectedProductInfo) {
+            document.getElementById('productIdSell').textContent = selectedProductInfo.ref;
+            document.getElementById('availableStockSell').textContent = selectedProductInfo.quantity;
+            document.getElementById('sellingPrice').textContent = selectedProductInfo.pvp;
+        }
+    });
 
 }
 

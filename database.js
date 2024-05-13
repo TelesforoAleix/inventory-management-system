@@ -118,7 +118,6 @@ async function registerTransaction(transactionDetail) {
     let params = [time, transactionType, productId, productName, unitaryPrice, quantityMoved, totalAmount] ;
 
     await runQuery(sql, params);
-    console.log('transaction should be succesfully added to db')
 };
 
     // Modify database
@@ -140,6 +139,25 @@ async function newProduct(productDetail) {
     await runQuery(sql, params);
 };
 
+async function sellProduct(productDetail) {
+    console.log('DB has received productDetail for sell', productDetail)
+}
+
+
+async function restockProduct(productDetail) {
+    console.log('DB has received productDetail for restock', productDetail)
+}
+
+async function getProductByRef(ref) {
+    try {
+        const query = `SELECT * FROM inventory WHERE ref = ?`;
+        const result = await getMetric(query, [ref]);
+        return result;
+    } catch (error) {
+        console.error('Error retrieving product by ref:', error);
+        return null;
+    }
+}
 
 
     // Process information
@@ -190,5 +208,7 @@ module.exports = {
     cleanInventory,
     getInventory, 
     registerTransaction, 
-    getTransactions
+    getTransactions, 
+    sellProduct,
+    restockProduct
  };

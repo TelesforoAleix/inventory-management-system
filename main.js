@@ -42,6 +42,10 @@ app.on('ready', () => {
     addProduct(productDetail);
   });
 
+  ipcMain.on('transact-product', (event, productDetail, transactionType) => {
+    transactProduct(productDetail, transactionType);
+  })
+
 
     // clean database listener
   ipcMain.on('clean-database', async (event) => {
@@ -92,6 +96,7 @@ app.on('ready', () => {
 
 async function addProduct(productDetail) {
   try {
+      console.log(productDetail);
       await db.newProduct(productDetail);
   } catch (error) {
     console.error('Error handling add-product event:', error);
@@ -99,6 +104,28 @@ async function addProduct(productDetail) {
 
 }
 
+
+async function transactProduct(productDetail, transactionType) {
+  try {
+    switch (transactionType) {
+      case "sell":
+        console.log('Getting restock to update inventory', productDetail)  
+        await db.sellProduct(productDetail);
+        break;
+    
+      case "restock":
+        console.log('Getting sell to update inventory', productDetail)  
+        await db.restockProduct(productDetail);
+      break;
+
+      default:
+        console.log('TransactionType for Sell or Restock not correct');
+        break;
+    }
+  } catch (error) {
+    console.error('Error handling add-product event:', error);
+  }
+}
 
 
 
@@ -112,3 +139,4 @@ app.on('activate', () => {
 app.on('window-all-closed', () => {
   app.quit()
 })
+
