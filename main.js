@@ -40,10 +40,12 @@ app.on('ready', () => {
     // add product listener
   ipcMain.on('add-product', (event, productDetail) => {
     addProduct(productDetail);
+    event.sender.send('update-page');
   });
 
   ipcMain.on('transact-product', (event, productDetail, transactionType) => {
     transactProduct(productDetail, transactionType);
+    event.sender.send('update-page');
   })
 
 
@@ -96,8 +98,7 @@ app.on('ready', () => {
 
 async function addProduct(productDetail) {
   try {
-      console.log(productDetail);
-      await db.newProduct(productDetail);
+    await db.newProduct(productDetail);
   } catch (error) {
     console.error('Error handling add-product event:', error);
   }
@@ -107,21 +108,8 @@ async function addProduct(productDetail) {
 
 async function transactProduct(productDetail, transactionType) {
   try {
-    switch (transactionType) {
-      case "sell":
-        console.log('Getting restock to update inventory', productDetail)  
-        await db.sellProduct(productDetail);
-        break;
-    
-      case "restock":
-        console.log('Getting sell to update inventory', productDetail)  
-        await db.restockProduct(productDetail);
-      break;
-
-      default:
-        console.log('TransactionType for Sell or Restock not correct');
-        break;
-    }
+    await db.updateStock(productDetail, transactionType);
+            
   } catch (error) {
     console.error('Error handling add-product event:', error);
   }

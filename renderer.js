@@ -1,5 +1,5 @@
 const { error } = require('console');
-const { ipcRenderer, Notification } = require('electron');
+const { ipcRenderer} = require('electron');
 
 //// background functions
 
@@ -22,8 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // update dashboard functions
 async function updateDashboard() {
     cleanForms();
-    updateInventory();
-    updateTransactions();
+    await updateInventory();
+    await updateTransactions();
 }
 
     function updateInventory() {
@@ -35,6 +35,7 @@ async function updateDashboard() {
     };
 
     // listener for inventoryData
+    let inventoryData;
     ipcRenderer.on('inventory-info', (event, message, inventoryData) => {
         updateInventoryMetrics(inventoryData);
         showProducts(inventoryData);
@@ -51,25 +52,27 @@ async function updateDashboard() {
         showMessage(message);
     });
 
+    ipcRenderer.on('update-page', (event) => {
+        updateDashboard();
+    })
+
 //// event listeners
 
 // add product button (addButton)
 const addButton = document.getElementById('addProduct');
 addButton.addEventListener('click', addProduct)
 
-function addProduct() {
-
+async function addProduct() {
     const productDetail = getProductDetail(); 
     const transactionType = 'add';
-
-    console.log(`product data and transactionType has been created for: ${productDetail} and ${transactionType}`);
+    console.log('Hey, the error should be here, look at that: ', productDetail, inventoryData);
 
     if (!productDetail.ref || !productDetail.name || isNaN(productDetail.quantity) || isNaN(productDetail.cost) || isNaN(productDetail.pvp)) {
         console.log('There is some important missing data');
         showMessage('Some fields are missing important data');
     } else {
         registerTransaction(productDetail, transactionType);
-        ipcRenderer.send('add-product', productDetail, transactionType );
+        await ipcRenderer.send('add-product', productDetail, transactionType );
     };
 
     updateDashboard();
@@ -90,7 +93,7 @@ function getProductDetail() {
 const restockButton = document.getElementById('restockProduct');
 restockButton.addEventListener('click', restockProduct)
 
-function restockProduct(){
+async function restockProduct(){
     const productDetail = getRestockDetail();
     const transactionType = 'restock';
 
@@ -99,7 +102,7 @@ function restockProduct(){
         showMessage('Some fields are missing important data');
     } else {
         registerTransaction(productDetail, transactionType);
-        ipcRenderer.send('transact-product', productDetail, transactionType );
+        await ipcRenderer.send('transact-product', productDetail, transactionType );
     };
 
     updateDashboard();
@@ -121,7 +124,7 @@ function getRestockDetail() {
 const sellButton = document.getElementById('sellProduct');
 sellButton.addEventListener('click', sellProduct)
 
-function sellProduct(){
+async function sellProduct(){
     const productDetail = getSellDetail();
     const transactionType = 'sell';
     const availableStock = parseInt(document.getElementById('availableStockSell').innerHTML, 10);
@@ -130,17 +133,17 @@ function sellProduct(){
     if (productDetail.quantity > availableStock) {
         showMessage('Not enough stock, please restock');
         console.log('Trying to sell more than available');
-    }
-
-    if (!productDetail.ref || !productDetail.name || isNaN(productDetail.quantity) || isNaN(productDetail.price)) {
-        console.log('There is some important missing data');
-        showMessage('Some fields are missing important data');
     } else {
-        registerTransaction(productDetail, transactionType);
-        ipcRenderer.send('transact-product', productDetail, transactionType );
-    };
+         if (!productDetail.ref || !productDetail.name || isNaN(productDetail.quantity) || isNaN(productDetail.price)) {
+            console.log('There is some important missing data');
+            showMessage('Some fields are missing important data');
+        } else {
+            registerTransaction(productDetail, transactionType);
+            await ipcRenderer.send('transact-product', productDetail, transactionType );
+        };
 
     updateDashboard();
+    }
 
 }
 
@@ -158,7 +161,7 @@ function getSellDetail() {
 const addRandomButton = document.getElementById('addRandomProduct');
 addRandomButton.addEventListener('click', addRandomProduct)
 
-function addRandomProduct() {
+async function addRandomProduct() {
     const productDetail = generateRandomProductData();
     const transactionType = "add";
 
@@ -169,7 +172,7 @@ function addRandomProduct() {
     } else {
         console.log(`Random data has been created for: ${productDetail.name}`)
         registerTransaction(productDetail, transactionType);
-        ipcRenderer.send('add-product', productDetail);
+        await ipcRenderer.send('add-product', productDetail);
         showMessage(`Random data has been created for: ${productDetail.name}`);
     }
 

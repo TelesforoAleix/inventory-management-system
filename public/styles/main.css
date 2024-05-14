@@ -1,3 +1,10 @@
+html { 
+    font-family: sans-serif; 
+    background: #2B2E3B; 
+    color: black; 
+    font-size: smaller; 
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -112,6 +119,10 @@ h3{
 
 .productsCards > h5{
     margin: 5px;
+}
+
+.productsCards > h3{
+    color: black;
 }
 
 .s5{

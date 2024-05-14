@@ -139,13 +139,41 @@ async function newProduct(productDetail) {
     await runQuery(sql, params);
 };
 
-async function sellProduct(productDetail) {
-    console.log('DB has received productDetail for sell', productDetail)
-}
+async function updateStock(productDetail, transactionType) {
+    const prevProduct = await getProductByRef(productDetail.ref);
+    let newStock
+    let newTotalValue
+    const sql = `UPDATE inventory SET quantity = ?, totalValue = ? WHERE ref = ?`;
+    let params = [];
+    console.log('Info we get from database and transaction: ', prevProduct, productDetail, transactionType);
 
+    try {  
+        switch (transactionType) {
+            case "sell":
+                newStock = prevProduct.quantity - productDetail.quantity;
+                newTotalValue = newStock * prevProduct.cost;  
+                params = [newStock, newTotalValue, productDetail.ref];
+                console.log('transactionType updateStock working, sell')
+            break;
+          
+            case "restock":
+                newStock = prevProduct.quantity + productDetail.quantity; 
+                newTotalValue = prevProduct.totalValue + (productDetail.quantity * productDetail.cost);
+                params = [newStock, newTotalValue, productDetail.ref];
+                console.log('transactionType updateStock working, restock');
+              break;
+        
+            default:
+              console.log('TransactionType for Sell or Restock not correct');
+              break;
+          }
+        await runQuery(sql, params)
 
-async function restockProduct(productDetail) {
-    console.log('DB has received productDetail for restock', productDetail)
+    } catch (error) {
+        console.log('updateStock function didnt work', error)
+    }
+    
+    console.log('DB has updated inventory', this.lastID);
 }
 
 async function getProductByRef(ref) {
@@ -209,6 +237,5 @@ module.exports = {
     getInventory, 
     registerTransaction, 
     getTransactions, 
-    sellProduct,
-    restockProduct
+    updateStock
  };
