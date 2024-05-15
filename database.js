@@ -120,6 +120,110 @@ async function registerTransaction(transactionDetail) {
     await runQuery(sql, params);
 };
 
+    // Compute Financial Metrics
+
+async function financialMetrics() {
+    const financialData = {
+        salesTransactions: await getNumberOfSales(),
+        salesUnits: await getItemsSold(),
+        totalRevenue: await getTotalRevenue(),
+        totalCogs: await getTotalCogs(),
+        grossProfit: await getGrossProfit(),
+        atv: await getAverageTicketSales(),
+        upt: await getUnitsPerTransaction()
+    }
+    return financialData;
+}
+
+async function getNumberOfSales() {
+    try {
+        const query = 'SELECT COUNT(*) AS salesTransactions FROM transactions WHERE transactionType = "sell"';
+        const result = await getMetric(query, []);
+        return result.salesTransactions || 0;
+
+    } catch (error) {
+        console.error('Error retrieving number of sales:', error);
+        return 0;
+    }  
+}
+
+async function getItemsSold(){
+    try {
+        const query = 'SELECT SUM(quantityMoved) AS salesUnits FROM transactions WHERE transactionType = "sell"';
+        const result = await getMetric(query, []);
+        return result.salesUnits || 0;
+
+    } catch (error) {
+        console.error('Error retrieving number of sales:', error);
+        return 0;
+    }
+}   
+
+async function getTotalRevenue(){
+    try {
+        const query = 'SELECT SUM(totalAmount) AS totalRevenue FROM transactions WHERE transactionType = "sell"';
+        const result = await getMetric(query, []);
+        return result.totalRevenue || 0;
+
+    } catch (error) {
+        console.error('Error retrieving number of sales:', error);
+        return 0;
+    } 
+}
+
+async function getTotalCogs(){
+    try {
+        const queryCosts = 'SELECT SUM(totalAmount) AS totalCost FROM transactions WHERE transactionType = "restock" OR transactionType = "add"';
+        const costObj = await getMetric(queryCosts, []);
+        const cost = costObj.totalCost;
+
+        const queryInventory = 'SELECT SUM(totalValue) AS inventoryValue FROM inventory';
+        const inventoryObj = await getMetric(queryInventory, []);
+        const inventory = inventoryObj.inventoryValue;
+
+
+        return (cost - inventory) || 0;
+    } catch (error) {
+        console.error('Error retrieving number of sales:', error);
+        return 0;
+    } 
+}
+
+async function getGrossProfit(){
+    try {
+        const revenue = await getTotalRevenue();
+        const cogs = await getTotalCogs();
+
+        return (revenue - cogs) || 0;
+    } catch (error) {
+        console.error('Error retrieving number of sales:', error);
+        return 0;
+    } 
+}
+
+async function getAverageTicketSales(){
+    try {
+        const revenue = await getTotalRevenue();
+        const salesTransactions = await getNumberOfSales();
+
+        return (revenue / salesTransactions) || 0;
+    } catch (error) {
+        console.error('Error retrieving number of sales:', error);
+        return 0;
+    } 
+}
+
+async function getUnitsPerTransaction(){
+    try {
+        const salesUnits = await getItemsSold();
+        const salesTransactions = await getNumberOfSales();
+
+        return (salesUnits / salesTransactions) || 0;
+    } catch (error) {
+        console.error('Error retrieving number of sales:', error);
+        return 0;
+    } 
+}
     // Modify database
 
 async function newProduct(productDetail) {
@@ -237,5 +341,6 @@ module.exports = {
     getInventory, 
     registerTransaction, 
     getTransactions, 
-    updateStock
+    updateStock, 
+    financialMetrics
  };

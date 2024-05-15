@@ -1,11 +1,13 @@
 const { error } = require('console');
 const { ipcRenderer} = require('electron');
+const { financialMetrics } = require('./database');
 
 //// background functions
 
 //receive and show notifications on the top
-ipcRenderer.on('show-notification', (event, response) => {
+ipcRenderer.on('show-notification', (event, response, error) => {
     showMessage(response);
+    console.log(error);
 });
 
 function showMessage(message) {
@@ -24,6 +26,7 @@ async function updateDashboard() {
     cleanForms();
     await updateInventory();
     await updateTransactions();
+    await updateFinancials();
 }
 
     function updateInventory() {
@@ -34,6 +37,10 @@ async function updateDashboard() {
         ipcRenderer.send('get-transaction-history');
     };
 
+    function updateFinancials() {
+        ipcRenderer.send('get-financial-metrics');
+    }
+
     // listener for inventoryData
     let inventoryData;
     ipcRenderer.on('inventory-info', (event, message, inventoryData) => {
@@ -42,9 +49,8 @@ async function updateDashboard() {
         populateDropdown(inventoryData);
     });
 
-    // listener for transactionList
+    // listener to receive information to show 
     ipcRenderer.on('transaction-history', (event, transactionList) => {
-        console.log(transactionList);
         showTransactions(transactionList);
     });
 
@@ -56,8 +62,12 @@ async function updateDashboard() {
         updateDashboard();
     })
 
-//// event listeners
+    ipcRenderer.on('financial-metrics', (event, financialMetrics) => {
+        updateFinancialMetrics(financialMetrics);
+    })
 
+//// event listeners
+  
 // add product button (addButton)
 const addButton = document.getElementById('addProduct');
 addButton.addEventListener('click', addProduct)
@@ -209,7 +219,15 @@ ipcRenderer.on('database-cleaned', (event, message) => {
         document.getElementById('inventoryValue').textContent = inventoryData.inventoryValue.toFixed(2)+"€";
     }
 
-
+    function updateFinancialMetrics(financialMetrics) {
+        document.getElementById('numberOfSales').textContent = financialMetrics.salesTransactions;
+        document.getElementById('quantitySold').textContent = financialMetrics.salesUnits;
+        document.getElementById('totalRevenue').textContent = financialMetrics.totalRevenue.toFixed(2);
+        document.getElementById('totalCogs').textContent = financialMetrics.totalCogs.toFixed(2);
+        document.getElementById('grossProfit').textContent = financialMetrics.grossProfit.toFixed(2);
+        document.getElementById('ticketSize').textContent = financialMetrics.atv.toFixed(2);
+        document.getElementById('unitsPerTransaction').textContent = financialMetrics.upt.toFixed(2);
+    }
     // Update data shown on Financials
 
  
@@ -310,13 +328,19 @@ return transactionDetail;
 
 // update transaction history with new array received
 function showTransactions(transactionList) {
+    if (!transactionList) {
+        console.error('Transaction list is undefined or null.');
+        return;
+    }
+
     const transactionTable = document.getElementById('transactionRows');
-    
+    const transactions = transactionList.length
+
     while (transactionTable.firstChild) {
         transactionTable.removeChild(transactionTable.firstChild);
     }
 
-    for (let i = transactionList.length - 1; i >= 0; i--) {
+    for (let i = transactions - 1; i >= 0; i--) {
         const transaction = transactionList[i];
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -334,7 +358,7 @@ function showTransactions(transactionList) {
 
 // update inventory cards based on available products
 
-function showProducts(inventoryData) {
+function showProducts(inventoryData) {  
     const productsCards = document.getElementById('stock-products');
     const products = inventoryData.products;
     products.sort((a, b) => a.quantity - b.quantity);

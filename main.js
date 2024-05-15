@@ -48,28 +48,6 @@ app.on('ready', () => {
     event.sender.send('update-page');
   })
 
-
-    // clean database listener
-  ipcMain.on('clean-database', async (event) => {
-    try {
-      await db.cleanInventory();
-      event.sender.send('database-cleaned', 'Inventory cleaned successfully' )
-    } catch (error) {
-      console.error('Error cleaning inventory:', error);
-      event.sender.send('database-cleaned', error.message);
-    }
-  });
-
-  ipcMain.on('get-inventory-data', async (event) => {
-    try {
-      let inventoryData = await db.getInventory();
-      event.sender.send('inventory-info', 'Inventory data updated', inventoryData )
-    } catch (error) {
-      console.error('Error getting inventory data:', error);
-      event.sender.send('inventory-info', error.message);
-    }
-  });
-
   ipcMain.on('new-transaction', async (event, transactionDetail) => {
     console.log('transaction received from renderer to main', transactionDetail);
     try {
@@ -82,16 +60,49 @@ app.on('ready', () => {
 
   });
 
-  ipcMain.on('get-transaction-history', async (event) => {
+    // clean database 
+  ipcMain.on('clean-database', async (event) => {
     try {
-      let transactionList = await db.getTransactions();
-      event.sender.send('transaction-history', transactionList);
+      await db.cleanInventory();
+      event.sender.send('database-cleaned', 'Inventory cleaned successfully' )
     } catch (error) {
-      console.error('Error getting transactions: ', error);
-      event.sender.send('transaction-history', error.message);
+      console.error('Error cleaning inventory:', error);
+      event.sender.send('database-cleaned', error.message);
     }
   });
 
+
+    // get database information
+  ipcMain.on('get-inventory-data', async (event) => {
+    try {
+      let inventoryData = await db.getInventory();
+      event.sender.send('inventory-info', 'Inventory data updated', inventoryData )
+    } catch (error) {
+      console.error('Error getting inventory data:', error);
+      event.sender.send('inventory-info', error.message);
+    }
+  });
+
+
+  ipcMain.on('get-transaction-history', async (event) => {
+    try {
+      const transactionList = await db.getTransactions();
+      event.sender.send('transaction-history', transactionList);
+    } catch (error) {
+      console.error('Error getting transactions: ', error);
+      event.sender.send('show-notification', 'Error getting transaction history', error.message);
+    }
+  });
+
+  ipcMain.on('get-financial-metrics', async (event) => {
+    try {
+      let financialMetrics = await db.financialMetrics();
+      event.sender.send('financial-metrics', financialMetrics);
+    } catch (error) {
+      console.error('Error getting financial data: ', error);
+      event.sender.send('show-notification', 'Error getting financial metrics', error.message);
+    }
+  });
 });
 
 // functions to interact with database.db
